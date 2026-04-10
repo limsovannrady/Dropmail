@@ -308,19 +308,6 @@ export default function Home() {
               <div className="mx-auto w-20 h-20 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                 <Inbox className="w-9 h-9 text-primary" />
               </div>
-              <Button
-                size="lg"
-                className="w-full h-12 text-base font-semibold rounded-xl"
-                onClick={handleCreateSession}
-                disabled={createSession.isPending}
-                data-testid="button-generate-email"
-              >
-                {createSession.isPending ? (
-                  <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Generating...</>
-                ) : (
-                  "Generate Email Address"
-                )}
-              </Button>
             </div>
           </div>
         ) : isLoadingSession ? (
