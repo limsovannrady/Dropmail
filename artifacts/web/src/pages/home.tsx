@@ -28,7 +28,7 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
-const SECRET_PIN = "178891";
+const SECRET_PIN = import.meta.env.VITE_SECRET_PIN || "";
 
 const SESSION_STORAGE_KEY = "dropmail_session_id";
 const SESSION_HISTORY_KEY = "dropmail_session_history";
