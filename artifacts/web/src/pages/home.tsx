@@ -262,8 +262,9 @@ export default function Home() {
     setPinDialogOpen(true);
   }, []);
 
-  const handlePinConfirm = useCallback(() => {
-    if (pinValue === SECRET_PIN) {
+  const handlePinConfirm = useCallback((val?: string) => {
+    const pin = val !== undefined ? val : pinValue;
+    if (pin === SECRET_PIN) {
       setPinDialogOpen(false);
       doCreateSession();
     } else {
@@ -311,7 +312,7 @@ export default function Home() {
               maxLength={6}
               value={pinValue}
               onChange={(val) => { setPinValue(val); setPinError(false); }}
-              onComplete={handlePinConfirm}
+              onComplete={(val) => handlePinConfirm(val)}
             >
               <InputOTPGroup>
                 <InputOTPSlot index={0} />
