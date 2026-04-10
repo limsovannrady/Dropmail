@@ -11,10 +11,11 @@ import {
   getGetSessionQueryKey,
   useGetSessionMails,
   getGetSessionMailsQueryKey,
+  getGetSessionMailsQueryOptions,
   useGetMailContent,
   getGetMailContentQueryKey
 } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQueries } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
 const SESSION_STORAGE_KEY = "dropmail_session_id";
@@ -163,6 +164,7 @@ export default function Home() {
 
   const [sessionId, setSessionId] = useState<string | null>(() => localStorage.getItem(SESSION_STORAGE_KEY));
   const [selectedMailId, setSelectedMailId] = useState<string | null>(null);
+  const [selectedMailSession, setSelectedMailSession] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [history, setHistory] = useState<SavedSession[]>(getHistory);
   const [activeTab, setActiveTab] = useState("inbox");
@@ -180,7 +182,7 @@ export default function Home() {
     }
   );
 
-  const { data: mailsData, isFetching: isPollingMails } = useGetSessionMails(
+  const { isFetching: isPollingMails } = useGetSessionMails(
     sessionId || "",
     {
       query: {
@@ -190,6 +192,27 @@ export default function Home() {
       },
     }
   );
+
+  // Fetch mails from ALL sessions in history for unified inbox
+  const allSessionMailsResults = useQueries({
+    queries: history.map((s) => ({
+      ...getGetSessionMailsQueryOptions(s.id),
+      refetchInterval: 4000,
+      queryKey: getGetSessionMailsQueryKey(s.id),
+    })),
+  });
+
+  // Combine all mails from all sessions, tagged with session info
+  const unifiedMails = allSessionMailsResults
+    .flatMap((result, i) => {
+      const session = history[i];
+      return (result.data?.mails || []).map((mail) => ({
+        ...mail,
+        _sessionId: session.id,
+        _sessionEmail: session.email,
+      }));
+    })
+    .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
 
   // Save current session to history when loaded
   useEffect(() => {
@@ -214,6 +237,7 @@ export default function Home() {
         setSessionId(data.id);
         localStorage.setItem(SESSION_STORAGE_KEY, data.id);
         setSelectedMailId(null);
+        setSelectedMailSession(null);
         setActiveTab("inbox");
         queryClient.invalidateQueries({ queryKey: getGetSessionQueryKey(data.id) });
         queryClient.invalidateQueries({ queryKey: getGetSessionMailsQueryKey(data.id) });
@@ -266,13 +290,13 @@ export default function Home() {
   }, []);
 
   const handleManualRefresh = useCallback(() => {
-    if (sessionId) {
-      queryClient.invalidateQueries({ queryKey: getGetSessionMailsQueryKey(sessionId) });
-    }
-  }, [sessionId, queryClient]);
+    history.forEach((s) => {
+      queryClient.invalidateQueries({ queryKey: getGetSessionMailsQueryKey(s.id) });
+    });
+  }, [history, queryClient]);
 
   const activeEmail = sessionData?.addresses?.[0]?.address;
-  const mails = mailsData?.mails || sessionData?.mails || [];
+  const mails = unifiedMails;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
@@ -344,9 +368,9 @@ export default function Home() {
                     {selectedMailId ? (
                       <div className="p-4 flex-1 flex flex-col">
                         <MailDetailView
-                          sessionId={sessionId}
+                          sessionId={selectedMailSession || sessionId}
                           mailId={selectedMailId}
-                          onBack={() => setSelectedMailId(null)}
+                          onBack={() => { setSelectedMailId(null); setSelectedMailSession(null); }}
                         />
                       </div>
                     ) : (
@@ -377,8 +401,8 @@ export default function Home() {
                             <div className="divide-y divide-border">
                               {mails.map((mail) => (
                                 <button
-                                  key={mail.rawId}
-                                  onClick={() => setSelectedMailId(mail.rawId)}
+                                  key={`${mail._sessionId}-${mail.rawId}`}
+                                  onClick={() => { setSelectedMailId(mail.rawId); setSelectedMailSession(mail._sessionId); }}
                                   className="w-full text-left px-4 py-4 hover:bg-muted/30 transition-colors group"
                                   data-testid={`button-mail-${mail.rawId}`}
                                 >
@@ -392,6 +416,7 @@ export default function Home() {
                                     {mail.headerSubject || "(No Subject)"}
                                   </p>
                                   <p className="text-xs text-muted-foreground line-clamp-1">{mail.text || "No preview available..."}</p>
+                                  <p className="text-xs text-muted-foreground/70 mt-1">→ {mail._sessionEmail}</p>
                                 </button>
                               ))}
                             </div>
