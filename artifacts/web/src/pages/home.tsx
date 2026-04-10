@@ -308,6 +308,10 @@ export default function Home() {
               <div className="mx-auto w-20 h-20 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                 <Inbox className="w-9 h-9 text-primary" />
               </div>
+              <div className="space-y-2">
+                <h2 className="text-xl font-semibold">Get a temporary email</h2>
+                <p className="text-sm text-muted-foreground">Click <span className="font-medium text-foreground">New Email</span> in the top right to get started.</p>
+              </div>
             </div>
           </div>
         ) : isLoadingSession ? (
