@@ -1,10 +1,10 @@
 {
   "version": 2,
   "installCommand": "pnpm install",
-  "buildCommand": "pnpm --filter @workspace/web build",
+  "buildCommand": "pnpm --filter @workspace/api-server build && pnpm --filter @workspace/web build",
   "functions": {
-    "api/index.ts": {
-      "includeFiles": "artifacts/web/dist/public/**",
+    "api/index.js": {
+      "includeFiles": "artifacts/api-server/dist/**,artifacts/web/dist/public/**",
       "memory": 512,
       "maxDuration": 10
     }
