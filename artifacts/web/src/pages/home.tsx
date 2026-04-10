@@ -168,6 +168,9 @@ export default function Home() {
   const [history, setHistory] = useState<SavedSession[]>(getHistory);
   const [activeTab, setActiveTab] = useState("inbox");
 
+  const knownMailIds = useRef<Set<string>>(new Set());
+  const isFirstLoad = useRef(true);
+
   const createSession = useCreateSession();
 
   const { data: sessionData, isLoading: isLoadingSession, error: sessionError } = useGetSession(
@@ -212,6 +215,55 @@ export default function Home() {
       }));
     })
     .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
+
+  // Play a notification "ding" using Web Audio API
+  const playNotificationSound = useCallback(() => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const frequencies = [880, 1108];
+      frequencies.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.12);
+        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.12);
+        gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + i * 0.12 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.4);
+        osc.start(ctx.currentTime + i * 0.12);
+        osc.stop(ctx.currentTime + i * 0.12 + 0.4);
+      });
+    } catch {
+      // Audio not supported — silently ignore
+    }
+  }, []);
+
+  // Detect new incoming mails and play sound
+  useEffect(() => {
+    if (unifiedMails.length === 0) return;
+
+    // On first load, just record existing mails without playing sound
+    if (isFirstLoad.current) {
+      unifiedMails.forEach((m) => knownMailIds.current.add(`${m._sessionId}-${m.rawId}`));
+      isFirstLoad.current = false;
+      return;
+    }
+
+    let hasNew = false;
+    unifiedMails.forEach((m) => {
+      const key = `${m._sessionId}-${m.rawId}`;
+      if (!knownMailIds.current.has(key)) {
+        knownMailIds.current.add(key);
+        hasNew = true;
+      }
+    });
+
+    if (hasNew) {
+      playNotificationSound();
+      toast({ title: "New email received!", description: "You have a new message in your inbox." });
+    }
+  }, [unifiedMails, playNotificationSound, toast]);
 
   // Save current session to history when loaded
   useEffect(() => {
