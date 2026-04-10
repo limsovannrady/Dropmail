@@ -3,16 +3,10 @@
   "installCommand": "pnpm install",
   "buildCommand": "pnpm --filter @workspace/web build",
   "outputDirectory": "artifacts/web/dist/public",
-  "functions": {
-    "artifacts/api-server/api/index.ts": {
-      "memory": 512,
-      "maxDuration": 10
-    }
-  },
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "/artifacts/api-server/api/index.ts"
+      "destination": "/api/index"
     },
     {
       "source": "/(.*)",
