@@ -28,7 +28,12 @@ interface SavedSession {
 
 function getHistory(): SavedSession[] {
   try {
-    return JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY) || "[]");
+    const all: SavedSession[] = JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY) || "[]");
+    const active = all.filter((s) => !isExpired(s.expiresAt));
+    if (active.length !== all.length) {
+      localStorage.setItem(SESSION_HISTORY_KEY, JSON.stringify(active));
+    }
+    return active;
   } catch {
     return [];
   }
