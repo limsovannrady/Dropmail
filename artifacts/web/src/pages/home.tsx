@@ -302,7 +302,7 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       {/* Header */}
       <header className="border-b border-border bg-white sticky top-0 z-10 shadow-sm">
-        <div className="container max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="w-full px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
               <Mail className="w-4 h-4" />
@@ -336,7 +336,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex-1 container max-w-5xl mx-auto px-4 py-6 pb-20 flex flex-col">
+      <main className="flex-1 w-full px-4 py-6 pb-20 flex flex-col">
         {!sessionId ? (
           /* No session — landing */
           <div className="flex-1 flex items-center justify-center">
@@ -485,7 +485,7 @@ export default function Home() {
 
             {/* BOTTOM TAB BAR */}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border z-20">
-              <div className="container max-w-5xl mx-auto flex">
+              <div className="w-full flex">
                 <button
                   onClick={() => setActiveTab("inbox")}
                   className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 text-xs font-medium transition-colors ${activeTab === "inbox" ? "text-primary border-t-2 border-primary -mt-px" : "text-muted-foreground hover:text-foreground"}`}
