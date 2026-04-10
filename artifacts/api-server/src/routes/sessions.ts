@@ -112,6 +112,9 @@ router.get(
       return;
     }
 
+    const email = data.session.addresses[0]?.address ?? "";
+    registerSession(raw, email);
+
     res.json({ mails: data.session.mails.map(mapMail) });
   },
 );
