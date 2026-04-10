@@ -348,7 +348,7 @@ export default function Home() {
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Your Temporary Address</p>
                       <div className="flex items-center gap-2">
-                        <code className="text-base sm:text-xl font-bold bg-muted/50 px-3 py-1.5 rounded-lg border border-border flex-1 sm:flex-none truncate select-all" data-testid="text-email-address">
+                        <code className="text-base sm:text-xl font-bold bg-muted/50 px-3 py-1.5 rounded-lg border border-border flex-1 sm:flex-none break-all select-all" data-testid="text-email-address">
                           {activeEmail}
                         </code>
                         <Button
@@ -457,7 +457,7 @@ export default function Home() {
                         <div key={saved.id} className="px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-3" data-testid={`row-session-${saved.id}`}>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <code className="text-sm font-semibold text-foreground truncate">{saved.email}</code>
+                              <code className="text-sm font-semibold text-foreground break-all">{saved.email}</code>
                               {isCurrent && (
                                 <Badge variant="default" className="text-xs shrink-0">Active</Badge>
                               )}
