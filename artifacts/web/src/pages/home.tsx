@@ -333,36 +333,6 @@ export default function Home() {
             <div className="flex-1 pb-2">
               {activeTab === "inbox" && (
                 <div className="flex flex-col gap-4 h-full">
-                  {/* Active email address card */}
-                  {sessionData && activeEmail && (
-                    <Card className="border border-border shadow-sm">
-                      <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="space-y-1 flex-1">
-                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Your Temporary Address</p>
-                          <div className="flex items-center gap-2">
-                            <code className="text-base sm:text-xl font-bold bg-muted/50 px-3 py-1.5 rounded-lg border border-border flex-1 break-all select-all" data-testid="text-email-address">
-                              {activeEmail}
-                            </code>
-                            <Button
-                              size="icon"
-                              variant={isCopied ? "default" : "outline"}
-                              onClick={() => handleCopyEmail(activeEmail)}
-                              className={`h-9 w-9 shrink-0 transition-all ${isCopied ? "bg-green-500 hover:bg-green-600 text-white border-green-500" : ""}`}
-                              data-testid="button-copy-email"
-                            >
-                              {isCopied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="sm:hidden flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg border border-border w-fit">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>Expires in:</span>
-                          <CountdownTimer expiresAt={sessionData.expiresAt} />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
                   {/* Mail list or detail */}
                   <div className="flex-1 bg-white border border-border rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[400px]">
                     {selectedMailId ? (
