@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { format, differenceInSeconds, formatDistanceToNow } from "date-fns";
-import { Copy, RefreshCcw, Mail, CheckCircle2, Inbox, Loader2, History, Trash2, Plus, ArrowLeft } from "lucide-react";
+import { Copy, RefreshCcw, Mail, CheckCircle2, Inbox, Loader2, History, Trash2, Plus, ArrowLeft, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -167,6 +167,8 @@ export default function Home() {
   const [isCopied, setIsCopied] = useState(false);
   const [history, setHistory] = useState<SavedSession[]>(getHistory);
   const [activeTab, setActiveTab] = useState("inbox");
+
+  const [manageSearch, setManageSearch] = useState("");
 
   const knownMailIds = useRef<Set<string>>(new Set());
   const isFirstLoad = useRef(true);
@@ -466,52 +468,97 @@ export default function Home() {
 
             {/* MANAGEMENT TAB */}
             {activeTab === "manage" && (
-              <div className="flex-1 overflow-y-auto">
-                <div className="px-4 py-2.5 border-b border-border bg-muted/20 flex items-center justify-between">
-                  <span className="text-sm font-semibold">Management</span>
-                  <span className="text-xs text-muted-foreground">{history.length} email(s)</span>
+              <div className="flex-1 overflow-hidden flex flex-col">
+                {/* Search bar */}
+                <div className="shrink-0 px-4 py-2.5 border-b border-border bg-muted/20">
+                  <div className="relative flex items-center">
+                    <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <input
+                      type="text"
+                      value={manageSearch}
+                      onChange={(e) => setManageSearch(e.target.value)}
+                      placeholder="Search email address..."
+                      className="w-full bg-white border border-border rounded-xl pl-9 pr-9 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 placeholder:text-muted-foreground/60"
+                    />
+                    {manageSearch && (
+                      <button
+                        onClick={() => setManageSearch("")}
+                        className="absolute right-3 text-muted-foreground active:text-foreground"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-                {history.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-20 text-center px-4">
-                    <History className="w-10 h-10 mb-3 text-muted-foreground/30" />
-                    <p className="font-medium text-sm">No emails yet</p>
-                    <p className="text-xs text-muted-foreground mt-1">Emails you create will appear here.</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-border">
-                    {history.map((saved) => {
-                      const expired = isExpired(saved.expiresAt);
-                      const isCurrent = saved.id === sessionId;
-                      return (
-                        <div key={saved.id} className="px-4 py-4 flex items-center gap-3" data-testid={`row-session-${saved.id}`}>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                              {isCurrent && <Badge variant="default" className="text-[10px] h-4 px-1.5 shrink-0">Active</Badge>}
-                              {expired && !isCurrent && <Badge variant="secondary" className="text-[10px] h-4 px-1.5 shrink-0">Expired</Badge>}
+
+                {/* List */}
+                <div className="flex-1 overflow-y-auto">
+                  {(() => {
+                    const filtered = history.filter((s) =>
+                      s.email.toLowerCase().includes(manageSearch.toLowerCase())
+                    );
+                    if (history.length === 0) return (
+                      <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+                        <History className="w-10 h-10 mb-3 text-muted-foreground/30" />
+                        <p className="font-medium text-sm">No emails yet</p>
+                        <p className="text-xs text-muted-foreground mt-1">Emails you create will appear here.</p>
+                      </div>
+                    );
+                    if (filtered.length === 0) return (
+                      <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+                        <Search className="w-10 h-10 mb-3 text-muted-foreground/30" />
+                        <p className="font-medium text-sm">No results</p>
+                        <p className="text-xs text-muted-foreground mt-1">No email matches "<span className="font-medium">{manageSearch}</span>"</p>
+                      </div>
+                    );
+                    return (
+                      <div className="divide-y divide-border">
+                        {filtered.map((saved) => {
+                          const expired = isExpired(saved.expiresAt);
+                          const isCurrent = saved.id === sessionId;
+                          const query = manageSearch.toLowerCase();
+                          const email = saved.email;
+                          const matchIdx = email.toLowerCase().indexOf(query);
+                          return (
+                            <div key={saved.id} className="px-4 py-4 flex items-center gap-3" data-testid={`row-session-${saved.id}`}>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                                  {isCurrent && <Badge variant="default" className="text-[10px] h-4 px-1.5 shrink-0">Active</Badge>}
+                                  {expired && !isCurrent && <Badge variant="secondary" className="text-[10px] h-4 px-1.5 shrink-0">Expired</Badge>}
+                                </div>
+                                <code className="text-sm font-medium text-foreground break-all leading-snug">
+                                  {query && matchIdx >= 0 ? (
+                                    <>
+                                      {email.slice(0, matchIdx)}
+                                      <mark className="bg-primary/20 text-primary rounded px-0.5">{email.slice(matchIdx, matchIdx + query.length)}</mark>
+                                      {email.slice(matchIdx + query.length)}
+                                    </>
+                                  ) : email}
+                                </code>
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  onClick={() => handleCopyEmail(saved.email)}
+                                  className="h-9 w-9 flex items-center justify-center text-muted-foreground active:text-foreground"
+                                  data-testid={`button-copy-${saved.id}`}
+                                >
+                                  <Copy className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteHistory(saved.id)}
+                                  className="h-9 w-9 flex items-center justify-center text-muted-foreground active:text-destructive"
+                                  data-testid={`button-delete-${saved.id}`}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
-                            <code className="text-sm font-medium text-foreground break-all leading-snug">{saved.email}</code>
-                          </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <button
-                              onClick={() => handleCopyEmail(saved.email)}
-                              className="h-9 w-9 flex items-center justify-center text-muted-foreground active:text-foreground"
-                              data-testid={`button-copy-${saved.id}`}
-                            >
-                              <Copy className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteHistory(saved.id)}
-                              className="h-9 w-9 flex items-center justify-center text-muted-foreground active:text-destructive"
-                              data-testid={`button-delete-${saved.id}`}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             )}
 
