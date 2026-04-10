@@ -285,19 +285,25 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {sessionData && (
-              <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-1 rounded-full border border-border">
-                <Clock className="w-3.5 h-3.5" />
-                <span>Expires in:</span>
-                <CountdownTimer expiresAt={sessionData.expiresAt} />
+          <div className="flex items-center gap-2">
+            {sessionData && activeEmail && (
+              <div className="flex items-center gap-1.5 bg-muted/50 border border-border rounded-lg px-2.5 py-1.5 max-w-[220px] sm:max-w-xs">
+                <code className="text-xs sm:text-sm font-semibold truncate flex-1 select-all">{activeEmail}</code>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => handleCopyEmail(activeEmail)}
+                  className={`h-6 w-6 shrink-0 ${isCopied ? "text-green-500" : "text-muted-foreground"}`}
+                >
+                  {isCopied ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                </Button>
               </div>
             )}
             <Button
               size="sm"
               onClick={handleCreateSession}
               disabled={createSession.isPending}
-              className="gap-2"
+              className="gap-2 shrink-0"
             >
               {createSession.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               New Email
