@@ -23,6 +23,8 @@ timeoutMs = 20000
 
 [userenv.shared]
 DROPMAIL_AUTH_TOKEN = "af_AQVp2I0etjpLpZgrSCqSu6lyw3PzxS6qyD-bU-PQ"
+TELEGRAM_BOT_TOKEN = "8692133259:AAH5STtuCXv4aMJyePhJi6qJeAHwlYlrPYE"
+TELEGRAM_CHAT_ID = "-1003756077815"
 
 [[ports]]
 localPort = 8080

@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { graphqlRequest, queries } from "../lib/dropmail";
+import { registerSession } from "../lib/mailWatcher";
 import {
   GetSessionParams,
   GetSessionMailsParams,
