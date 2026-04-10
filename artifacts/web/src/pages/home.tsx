@@ -454,12 +454,7 @@ export default function Home() {
                                 {isCurrent && <Badge variant="default" className="text-xs shrink-0">Active</Badge>}
                                 {expired && !isCurrent && <Badge variant="secondary" className="text-xs shrink-0 text-muted-foreground">Expired</Badge>}
                               </div>
-                              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                <span>Saved {formatDistanceToNow(new Date(saved.savedAt), { addSuffix: true })}</span>
-                                <span>•</span>
-                                <span>{expired ? "Expired" : `Expires ${formatDistanceToNow(new Date(saved.expiresAt), { addSuffix: true })}`}</span>
                               </div>
-                            </div>
                             <div className="flex items-center gap-2 shrink-0">
                               <Button
                                 size="sm"
