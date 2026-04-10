@@ -248,9 +248,8 @@ export default function Home() {
   const handleCopyEmail = useCallback((email: string) => {
     navigator.clipboard.writeText(email);
     setIsCopied(true);
-    toast({ title: "Copied to clipboard", description: "Email address copied." });
     setTimeout(() => setIsCopied(false), 2000);
-  }, [toast]);
+  }, []);
 
   const handleManualRefresh = useCallback(() => {
     if (sessionId) {
