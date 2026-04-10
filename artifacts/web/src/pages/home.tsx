@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { format, differenceInSeconds, formatDistanceToNow } from "date-fns";
 import { Copy, RefreshCcw, Mail, Clock, CheckCircle2, Inbox, ArrowLeft, Loader2, KeyRound, History, Trash2, Plus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -154,7 +153,6 @@ function MailDetailView({ sessionId, mailId, onBack }: { sessionId: string; mail
 }
 
 export default function Home() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [sessionId, setSessionId] = useState<string | null>(() => localStorage.getItem(SESSION_STORAGE_KEY));
@@ -246,13 +244,9 @@ export default function Home() {
         localStorage.setItem(SESSION_STORAGE_KEY, data.id);
         setSelectedMailId(null);
         setActiveTab("inbox");
-        toast({ title: "New session created", description: "Your temporary email is ready." });
-      },
-      onError: () => {
-        toast({ title: "Failed to create session", description: "Please try again.", variant: "destructive" });
       },
     });
-  }, [createSession, toast]);
+  }, [createSession]);
 
   const handleDeleteHistory = useCallback((id: string) => {
     removeFromHistory(id);
