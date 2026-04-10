@@ -258,6 +258,16 @@ export default function Home() {
       if (!knownMailIds.current.has(key)) {
         knownMailIds.current.add(key);
         hasNew = true;
+        fetch("/api/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            toEmail: m._sessionEmail,
+            fromAddr: m.fromAddr,
+            subject: m.headerSubject,
+            preview: m.text || "",
+          }),
+        }).catch(() => {});
       }
     });
 
