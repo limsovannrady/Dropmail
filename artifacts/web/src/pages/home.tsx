@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { format, differenceInSeconds, formatDistanceToNow } from "date-fns";
-import { Copy, RefreshCcw, Mail, Clock, CheckCircle2, Inbox, ArrowLeft, Loader2, KeyRound, History, RotateCcw, Trash2, Plus } from "lucide-react";
+import { Copy, RefreshCcw, Mail, Clock, CheckCircle2, Inbox, ArrowLeft, Loader2, KeyRound, History, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -204,18 +204,40 @@ export default function Home() {
     }
   }, [sessionData]);
 
-  // Clear invalid/expired session
+  // Auto-create new session when current one expires
+  useEffect(() => {
+    if (!sessionData?.expiresAt) return;
+    const msLeft = new Date(sessionData.expiresAt).getTime() - Date.now();
+    if (msLeft <= 0) return;
+    const timer = setTimeout(() => {
+      createSession.mutate(undefined, {
+        onSuccess: (data) => {
+          setSessionId(data.id);
+          localStorage.setItem(SESSION_STORAGE_KEY, data.id);
+          setSelectedMailId(null);
+        },
+      });
+    }, msLeft);
+    return () => clearTimeout(timer);
+  }, [sessionData?.expiresAt]);
+
+  // Clear invalid session on error (non-expiry errors)
   useEffect(() => {
     if (sessionError) {
-      setSessionId(null);
-      localStorage.removeItem(SESSION_STORAGE_KEY);
-      toast({
-        title: "Session expired",
-        description: "Your previous temporary email session has expired.",
-        variant: "destructive",
+      // Try to auto-create a new session instead of just clearing
+      createSession.mutate(undefined, {
+        onSuccess: (data) => {
+          setSessionId(data.id);
+          localStorage.setItem(SESSION_STORAGE_KEY, data.id);
+          setSelectedMailId(null);
+        },
+        onError: () => {
+          setSessionId(null);
+          localStorage.removeItem(SESSION_STORAGE_KEY);
+        },
       });
     }
-  }, [sessionError, toast]);
+  }, [sessionError]);
 
   const handleCreateSession = useCallback(() => {
     createSession.mutate(undefined, {
@@ -231,14 +253,6 @@ export default function Home() {
       },
     });
   }, [createSession, toast]);
-
-  const handleRestoreSession = useCallback((saved: SavedSession) => {
-    setSessionId(saved.id);
-    localStorage.setItem(SESSION_STORAGE_KEY, saved.id);
-    setSelectedMailId(null);
-    setActiveTab("inbox");
-    toast({ title: "Session restored", description: `Reconnecting to ${saved.email}` });
-  }, [toast]);
 
   const handleDeleteHistory = useCallback((id: string) => {
     removeFromHistory(id);
@@ -471,22 +485,6 @@ export default function Home() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
-                            {!isCurrent && (
-                              <Button
-                                size="sm"
-                                variant={expired ? "outline" : "default"}
-                                onClick={() => expired ? handleCreateSession() : handleRestoreSession(saved)}
-                                disabled={createSession.isPending}
-                                className="gap-1.5"
-                                data-testid={`button-restore-${saved.id}`}
-                              >
-                                {expired ? (
-                                  <><Plus className="w-3.5 h-3.5" />New Email</>
-                                ) : (
-                                  <><RotateCcw className="w-3.5 h-3.5" />Restore</>
-                                )}
-                              </Button>
-                            )}
                             <Button
                               size="sm"
                               variant="ghost"
