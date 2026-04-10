@@ -53,6 +53,8 @@ function mapMail(m: DropMailMail) {
 router.post("/sessions", async (req, res): Promise<void> => {
   const data = await graphqlRequest<DropMailSession>(queries.introduceSession);
   const session = data.introduceSession;
+  const email = session.addresses[0]?.address ?? "";
+  registerSession(session.id, email);
   res.json({
     id: session.id,
     expiresAt: session.expiresAt,
