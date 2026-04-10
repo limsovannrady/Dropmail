@@ -213,27 +213,36 @@ export default function Home() {
         localStorage.setItem(SESSION_STORAGE_KEY, data.id);
         setSelectedMailId(null);
         setActiveTab("inbox");
+        queryClient.invalidateQueries({ queryKey: getGetSessionQueryKey(data.id) });
+        queryClient.invalidateQueries({ queryKey: getGetSessionMailsQueryKey(data.id) });
       },
     });
-  }, [createSession]);
+  }, [createSession, queryClient]);
 
-  // Auto-create new session when current one expires
+  // Auto-refresh session when it expires
   useEffect(() => {
     if (!sessionData?.expiresAt) return;
     const msLeft = new Date(sessionData.expiresAt).getTime() - Date.now();
     if (msLeft <= 0) return;
     const timer = setTimeout(() => {
-      doCreateSession();
+      createSession.mutate(undefined, {
+        onSuccess: (data) => {
+          setSessionId(data.id);
+          localStorage.setItem(SESSION_STORAGE_KEY, data.id);
+          setSelectedMailId(null);
+        },
+      });
     }, msLeft);
     return () => clearTimeout(timer);
-  }, [sessionData?.expiresAt, doCreateSession]);
+  }, [sessionData?.expiresAt]);
 
-  // Clear invalid session on error (non-expiry errors)
+  // Clear invalid session on error — just reset so user can retry
   useEffect(() => {
     if (sessionError) {
-      doCreateSession();
+      setSessionId(null);
+      localStorage.removeItem(SESSION_STORAGE_KEY);
     }
-  }, [sessionError, doCreateSession]);
+  }, [sessionError]);
 
   const handleCreateSession = useCallback(() => {
     doCreateSession();
