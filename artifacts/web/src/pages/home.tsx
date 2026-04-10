@@ -428,8 +428,24 @@ export default function Home() {
                                 {isCurrent && <Badge variant="default" className="text-xs shrink-0">Active</Badge>}
                                 {expired && !isCurrent && <Badge variant="secondary" className="text-xs shrink-0 text-muted-foreground">Expired</Badge>}
                               </div>
-                              </div>
+                            </div>
                             <div className="flex items-center gap-2 shrink-0">
+                              {!isCurrent && !expired && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSessionId(saved.id);
+                                    localStorage.setItem(SESSION_STORAGE_KEY, saved.id);
+                                    setSelectedMailId(null);
+                                    setActiveTab("inbox");
+                                  }}
+                                  className="h-8 text-xs"
+                                  data-testid={`button-switch-${saved.id}`}
+                                >
+                                  Switch
+                                </Button>
+                              )}
                               <Button
                                 size="sm"
                                 variant="ghost"
