@@ -15,6 +15,7 @@ import {
   getGetMailContentQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 const SESSION_STORAGE_KEY = "dropmail_session_id";
 const SESSION_HISTORY_KEY = "dropmail_session_history";
@@ -158,6 +159,7 @@ function MailDetailView({ sessionId, mailId, onBack }: { sessionId: string; mail
 
 export default function Home() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const [sessionId, setSessionId] = useState<string | null>(() => localStorage.getItem(SESSION_STORAGE_KEY));
   const [selectedMailId, setSelectedMailId] = useState<string | null>(null);
@@ -215,9 +217,13 @@ export default function Home() {
         setActiveTab("inbox");
         queryClient.invalidateQueries({ queryKey: getGetSessionQueryKey(data.id) });
         queryClient.invalidateQueries({ queryKey: getGetSessionMailsQueryKey(data.id) });
+        toast({ title: "New email created!", description: "Your new temporary inbox is ready." });
+      },
+      onError: () => {
+        toast({ title: "Failed to create email", description: "Please try again.", variant: "destructive" });
       },
     });
-  }, [createSession, queryClient]);
+  }, [createSession, queryClient, toast]);
 
   // Auto-refresh session when it expires
   useEffect(() => {
