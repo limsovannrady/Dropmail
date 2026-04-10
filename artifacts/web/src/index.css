@@ -45,7 +45,7 @@
 }
 
 :root {
-  --background: 240 10% 98%;
+  --background: 0 0% 100%;
   --foreground: 240 10% 4%;
   
   --card: 0 0% 100%;
@@ -119,9 +119,8 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
   
-  /* Force dark mode by default for the developer feel */
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
 }
 

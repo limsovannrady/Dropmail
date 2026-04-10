@@ -19,7 +19,7 @@ function Router() {
 
 function App() {
   useEffect(() => {
-    document.documentElement.classList.add("dark");
+    document.documentElement.classList.remove("dark");
   }, []);
 
   return (
