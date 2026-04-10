@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": "pnpm install",
-  "buildCommand": "pnpm --filter @workspace/api-server build && pnpm --filter @workspace/web build",
+  "buildCommand": "pnpm --filter @workspace/api-zod build && pnpm --filter @workspace/api-server build && pnpm --filter @workspace/web build",
   "functions": {
     "api/index.js": {
       "includeFiles": "artifacts/api-server/dist/**,artifacts/web/dist/public/**",
