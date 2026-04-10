@@ -23,7 +23,6 @@ timeoutMs = 20000
 
 [userenv.shared]
 DROPMAIL_AUTH_TOKEN = "af_AQVp2I0etjpLpZgrSCqSu6lyw3PzxS6qyD-bU-PQ"
-VITE_SECRET_PIN = "178891"
 
 [[ports]]
 localPort = 8080
