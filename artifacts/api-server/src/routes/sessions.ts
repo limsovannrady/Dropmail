@@ -49,24 +49,9 @@ function mapMail(m: DropMailMail) {
   };
 }
 
-let sharedSessionId: string | null = null;
-let sharedSessionExpiresAt: string | null = null;
-let sharedSessionAddresses: Array<{ address: string }> = [];
-
-async function getOrCreateSharedSession(): Promise<{ id: string; expiresAt: string; addresses: Array<{ address: string }> }> {
-  if (sharedSessionId && sharedSessionExpiresAt && new Date(sharedSessionExpiresAt) > new Date()) {
-    return { id: sharedSessionId, expiresAt: sharedSessionExpiresAt, addresses: sharedSessionAddresses };
-  }
+router.post("/sessions", async (req, res): Promise<void> => {
   const data = await graphqlRequest<DropMailSession>(queries.introduceSession);
   const session = data.introduceSession;
-  sharedSessionId = session.id;
-  sharedSessionExpiresAt = session.expiresAt;
-  sharedSessionAddresses = session.addresses;
-  return session;
-}
-
-router.post("/sessions", async (req, res): Promise<void> => {
-  const session = await getOrCreateSharedSession();
   res.json({
     id: session.id,
     expiresAt: session.expiresAt,
