@@ -3,13 +3,17 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: DropMail temporary email API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: sessions
+    description: Temporary email session operations
+  - name: mails
+    description: Mail operations
 paths:
   /healthz:
     get:
@@ -24,6 +28,105 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /sessions:
+    post:
+      operationId: createSession
+      tags: [sessions]
+      summary: Create a new temporary email session
+      description: Creates a new session with a randomly generated temporary email address
+      responses:
+        "200":
+          description: Session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "500":
+          description: Failed to create session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /sessions/{sessionId}:
+    get:
+      operationId: getSession
+      tags: [sessions]
+      summary: Get session details with emails
+      description: Returns session info including the list of received emails
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionWithMails"
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /sessions/{sessionId}/mails:
+    get:
+      operationId: getSessionMails
+      tags: [sessions]
+      summary: Get emails for a session
+      description: Returns all emails received in the session
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of emails
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MailList"
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /sessions/{sessionId}/mails/{mailId}:
+    get:
+      operationId: getMailContent
+      tags: [sessions]
+      summary: Get full email content
+      description: Returns the full content of a specific email
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: mailId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Email content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MailDetail"
+        "404":
+          description: Email not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +136,113 @@ components:
           type: string
       required:
         - status
-
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        addresses:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailAddress"
+      required:
+        - id
+        - expiresAt
+        - addresses
+    EmailAddress:
+      type: object
+      properties:
+        address:
+          type: string
+      required:
+        - address
+    SessionWithMails:
+      type: object
+      properties:
+        id:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        addresses:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailAddress"
+        mails:
+          type: array
+          items:
+            $ref: "#/components/schemas/MailSummary"
+      required:
+        - id
+        - expiresAt
+        - addresses
+        - mails
+    MailSummary:
+      type: object
+      properties:
+        rawId:
+          type: string
+        fromAddr:
+          type: string
+        toAddr:
+          type: string
+        downloadUrl:
+          type: string
+        text:
+          type: string
+        headerSubject:
+          type: string
+        receivedAt:
+          type: string
+          format: date-time
+      required:
+        - rawId
+        - fromAddr
+        - toAddr
+        - headerSubject
+        - receivedAt
+    MailDetail:
+      type: object
+      properties:
+        rawId:
+          type: string
+        fromAddr:
+          type: string
+        toAddr:
+          type: string
+        downloadUrl:
+          type: string
+        text:
+          type: string
+        headerSubject:
+          type: string
+        receivedAt:
+          type: string
+          format: date-time
+        html:
+          type: string
+      required:
+        - rawId
+        - fromAddr
+        - toAddr
+        - headerSubject
+        - receivedAt
+    MailList:
+      type: object
+      properties:
+        mails:
+          type: array
+          items:
+            $ref: "#/components/schemas/MailSummary"
+      required:
+        - mails

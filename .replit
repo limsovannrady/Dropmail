@@ -18,3 +18,28 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
+
+[userenv]
+
+[userenv.shared]
+DROPMAIL_AUTH_TOKEN = "af_AQVp2I0etjpLpZgrSCqSu6lyw3PzxS6qyD-bU-PQ"
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
+localPort = 8082
+externalPort = 3001
+
+[[ports]]
+localPort = 22333
+externalPort = 80
+
+[[ports]]
+localPort = 22334
+externalPort = 3000

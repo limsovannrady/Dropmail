@@ -5,7 +5,8 @@
  * DropMail temporary email API
  * OpenAPI spec version: 0.1.0
  */
+import type { MailSummary } from "./mailSummary";
 
-export interface HealthStatus {
-  status: string;
+export interface MailList {
+  mails: MailSummary[];
 }
