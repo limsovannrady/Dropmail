@@ -467,9 +467,9 @@ export default function Home() {
                   data-testid="tab-inbox"
                 >
                   <Inbox className="w-5 h-5" />
-                  <span className="truncate max-w-[140px] sm:max-w-none text-center leading-tight">
-                    {activeEmail || "Inbox"}
-                    {mails.length > 0 && <span className="ml-1 bg-primary text-primary-foreground text-[10px] px-1.5 rounded-full">{mails.length}</span>}
+                  <span className="flex items-center gap-1">
+                    Inbox
+                    {mails.length > 0 && <span className="bg-primary text-primary-foreground text-[10px] px-1.5 rounded-full">{mails.length}</span>}
                   </span>
                 </button>
                 <button
