@@ -66,7 +66,7 @@ export const queries = {
           address
         }
         mails {
-          rawId
+          id
           fromAddr
           toAddr
           downloadUrl
@@ -81,7 +81,7 @@ export const queries = {
     query ($id: ID!) {
       session(id: $id) {
         mails {
-          rawId
+          id
           fromAddr
           toAddr
           downloadUrl

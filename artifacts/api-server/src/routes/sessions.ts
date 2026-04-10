@@ -16,22 +16,37 @@ interface DropMailSession {
   };
 }
 
+interface DropMailMail {
+  id: string;
+  fromAddr: string;
+  toAddr: string;
+  downloadUrl?: string;
+  text?: string;
+  headerSubject: string;
+  receivedAt: string;
+  html?: string;
+}
+
 interface DropMailGetSession {
   session: {
     id: string;
     expiresAt: string;
     addresses: Array<{ address: string }>;
-    mails: Array<{
-      rawId: string;
-      fromAddr: string;
-      toAddr: string;
-      downloadUrl?: string;
-      text?: string;
-      headerSubject: string;
-      receivedAt: string;
-      html?: string;
-    }>;
+    mails: DropMailMail[];
   } | null;
+}
+
+function mapMail(m: DropMailMail) {
+  return {
+    rawId: m.id,
+    fromAddr: m.fromAddr,
+    toAddr: m.toAddr,
+    downloadUrl: m.downloadUrl,
+    text: m.text,
+    headerSubject: m.headerSubject,
+    receivedAt: m.receivedAt,
+    html: m.html,
+  };
 }
 
 router.post("/sessions", async (req, res): Promise<void> => {
@@ -69,7 +84,7 @@ router.get("/sessions/:sessionId", async (req, res): Promise<void> => {
     id: data.session.id,
     expiresAt: data.session.expiresAt,
     addresses: data.session.addresses,
-    mails: data.session.mails,
+    mails: data.session.mails.map(mapMail),
   });
 });
 
@@ -95,7 +110,7 @@ router.get(
       return;
     }
 
-    res.json({ mails: data.session.mails });
+    res.json({ mails: data.session.mails.map(mapMail) });
   },
 );
 
@@ -125,13 +140,13 @@ router.get(
       return;
     }
 
-    const mail = data.session.mails.find((m) => m.rawId === mailId);
+    const mail = data.session.mails.find((m) => m.id === mailId);
     if (!mail) {
       res.status(404).json({ error: "Mail not found" });
       return;
     }
 
-    res.json(mail);
+    res.json(mapMail(mail));
   },
 );
 
