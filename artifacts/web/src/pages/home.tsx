@@ -451,6 +451,15 @@ export default function Home() {
                               <Button
                                 size="sm"
                                 variant="ghost"
+                                onClick={() => handleCopyEmail(saved.email)}
+                                className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
+                                data-testid={`button-copy-${saved.id}`}
+                              >
+                                <Copy className="w-3.5 h-3.5" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
                                 onClick={() => handleDeleteHistory(saved.id)}
                                 className="text-muted-foreground hover:text-destructive h-8 w-8 p-0"
                                 data-testid={`button-delete-${saved.id}`}
