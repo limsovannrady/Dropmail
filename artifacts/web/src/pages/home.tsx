@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { format, differenceInSeconds, formatDistanceToNow } from "date-fns";
-import { Copy, RefreshCcw, Mail, Clock, CheckCircle2, Inbox, ArrowLeft, Loader2, History, Trash2, Plus } from "lucide-react";
+import { Copy, RefreshCcw, Mail, CheckCircle2, Inbox, Loader2, History, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
   useCreateSession,
@@ -299,217 +297,200 @@ export default function Home() {
   const mails = unifiedMails;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
-      {/* Header */}
-      <header className="border-b border-border bg-white sticky top-0 z-10 shadow-sm">
-        <div className="w-full px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
-              <Mail className="w-4 h-4" />
-            </div>
-          </div>
+    <div className="h-dvh bg-background text-foreground flex flex-col font-sans overflow-hidden">
 
-          <div className="flex items-center gap-2">
-            {sessionData && activeEmail && (
-              <div className="flex items-center gap-1.5 bg-muted/50 border border-border rounded-lg px-2.5 py-1.5 max-w-[220px] sm:max-w-xs">
-                <code className="text-xs sm:text-sm font-semibold truncate flex-1 select-all">{activeEmail}</code>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => handleCopyEmail(activeEmail)}
-                  className={`h-6 w-6 shrink-0 ${isCopied ? "text-green-500" : "text-muted-foreground"}`}
-                >
-                  {isCopied ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                </Button>
-              </div>
-            )}
-            <Button
-              size="sm"
-              onClick={handleCreateSession}
-              disabled={createSession.isPending}
-              className="gap-2 shrink-0"
-            >
-              {createSession.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-              New Email
-            </Button>
+      {/* HEADER */}
+      <header className="shrink-0 bg-white border-b border-border z-10">
+        <div className="w-full px-4 h-14 flex items-center justify-between gap-3">
+          <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shrink-0">
+            <Mail className="w-4 h-4" />
           </div>
+          {sessionData && activeEmail && (
+            <button
+              onClick={() => handleCopyEmail(activeEmail)}
+              className="flex-1 flex items-center gap-2 bg-muted/60 rounded-xl px-3 py-2 min-w-0 active:bg-muted"
+            >
+              <code className="text-sm font-semibold truncate flex-1 text-left">{activeEmail}</code>
+              {isCopied
+                ? <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                : <Copy className="h-4 w-4 text-muted-foreground shrink-0" />}
+            </button>
+          )}
+          <Button
+            size="sm"
+            onClick={handleCreateSession}
+            disabled={createSession.isPending}
+            className="gap-1.5 shrink-0 h-9 px-3"
+          >
+            {createSession.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            New
+          </Button>
         </div>
       </header>
 
-      <main className="flex-1 w-full px-4 py-6 pb-20 flex flex-col">
+      {/* MAIN CONTENT */}
+      <main className="flex-1 overflow-hidden flex flex-col">
         {!sessionId ? (
-          /* No session — landing */
-          <div className="flex-1 flex items-center justify-center">
-            <div className="max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
-              <div className="mx-auto w-20 h-20 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                <Inbox className="w-9 h-9 text-primary" />
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="text-center space-y-4">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <Inbox className="w-8 h-8 text-primary" />
               </div>
-              <div className="space-y-2">
-                <h2 className="text-xl font-semibold">Get a temporary email</h2>
-                <p className="text-sm text-muted-foreground">Click <span className="font-medium text-foreground">New Email</span> in the top right to get started.</p>
+              <div className="space-y-1">
+                <h2 className="text-lg font-semibold">Get a temporary email</h2>
+                <p className="text-sm text-muted-foreground">Tap <span className="font-medium text-foreground">New</span> above to get started.</p>
               </div>
             </div>
           </div>
         ) : isLoadingSession ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="flex flex-col items-center gap-3 text-muted-foreground">
-              <Loader2 className="h-7 w-7 animate-spin text-primary" />
-              <p className="text-sm">Loading session...</p>
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <p className="text-sm">Loading...</p>
             </div>
           </div>
         ) : (
-          <>
-            {/* CONTENT AREA */}
-            <div className="flex-1 pb-2">
-              {activeTab === "inbox" && (
-                <div className="flex flex-col gap-4 h-full">
-                  {/* Mail list or detail */}
-                  <div className="flex-1 bg-white border border-border rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[400px]">
-                    {selectedMailId ? (
-                      <div className="p-4 flex-1 flex flex-col">
-                        <MailDetailView
-                          sessionId={selectedMailSession || sessionId}
-                          mailId={selectedMailId}
-                          onBack={() => { setSelectedMailId(null); setSelectedMailSession(null); }}
-                        />
-                      </div>
-                    ) : (
-                      <>
-                        <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-muted/30">
-                          <h2 className="font-semibold text-sm text-foreground">Inbox</h2>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleManualRefresh}
-                            className="text-muted-foreground hover:text-foreground h-8 px-2"
-                            data-testid="button-refresh"
-                          >
-                            <RefreshCcw className={`h-3.5 w-3.5 mr-1.5 ${isPollingMails ? "animate-spin text-primary" : ""}`} />
-                            Refresh
-                          </Button>
-                        </div>
-                        <div className="flex-1 overflow-y-auto">
-                          {mails.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
-                              <div className="w-14 h-14 rounded-full bg-muted/50 flex items-center justify-center mb-3">
-                                <RefreshCcw className="w-6 h-6 animate-spin text-muted-foreground/40" style={{ animationDuration: "3s" }} />
-                              </div>
-                              <p className="font-medium text-foreground">Waiting for emails</p>
-                              <p className="text-sm mt-1 max-w-xs">Emails sent to your address will appear here automatically.</p>
-                            </div>
-                          ) : (
-                            <div className="divide-y divide-border">
-                              {mails.map((mail) => (
-                                <button
-                                  key={`${mail._sessionId}-${mail.rawId}`}
-                                  onClick={() => { setSelectedMailId(mail.rawId); setSelectedMailSession(mail._sessionId); }}
-                                  className="w-full text-left px-4 py-4 hover:bg-muted/30 transition-colors group"
-                                  data-testid={`button-mail-${mail.rawId}`}
-                                >
-                                  <div className="flex items-center justify-between gap-3 mb-1">
-                                    <span className="font-semibold text-sm text-foreground truncate">{mail.fromAddr}</span>
-                                    <span className="text-xs text-muted-foreground font-mono shrink-0">
-                                      {formatDistanceToNow(new Date(mail.receivedAt), { addSuffix: true })}
-                                    </span>
-                                  </div>
-                                  <p className="font-medium text-sm text-foreground/90 group-hover:text-primary transition-colors mb-0.5">
-                                    {mail.headerSubject || "(No Subject)"}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground line-clamp-1">{mail.text || "No preview available..."}</p>
-                                  <p className="text-xs text-muted-foreground/70 mt-1">→ {mail._sessionEmail}</p>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
+          <div className="flex-1 overflow-hidden flex flex-col pb-16">
 
-              {activeTab === "manage" && (
-                <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-                  <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
-                    <h2 className="font-semibold text-sm text-foreground">Session History</h2>
-                    <span className="text-xs text-muted-foreground">{history.length} session(s)</span>
+            {/* INBOX TAB */}
+            {activeTab === "inbox" && (
+              <div className="flex-1 overflow-hidden flex flex-col">
+                {selectedMailId ? (
+                  <div className="flex-1 overflow-y-auto p-4">
+                    <MailDetailView
+                      sessionId={selectedMailSession || sessionId}
+                      mailId={selectedMailId}
+                      onBack={() => { setSelectedMailId(null); setSelectedMailSession(null); }}
+                    />
                   </div>
-                  {history.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground px-4">
-                      <History className="w-10 h-10 mb-3 text-muted-foreground/40" />
-                      <p className="font-medium text-foreground">No session history</p>
-                      <p className="text-sm mt-1">Sessions you create will appear here.</p>
+                ) : (
+                  <>
+                    <div className="shrink-0 px-4 py-2.5 border-b border-border flex items-center justify-between bg-muted/20">
+                      <span className="text-sm font-semibold text-foreground">Inbox</span>
+                      <button
+                        onClick={handleManualRefresh}
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground active:text-foreground py-1 px-2"
+                        data-testid="button-refresh"
+                      >
+                        <RefreshCcw className={`h-3.5 w-3.5 ${isPollingMails ? "animate-spin text-primary" : ""}`} />
+                        Refresh
+                      </button>
                     </div>
-                  ) : (
-                    <div className="divide-y divide-border">
-                      {history.map((saved) => {
-                        const expired = isExpired(saved.expiresAt);
-                        const isCurrent = saved.id === sessionId;
-                        return (
-                          <div key={saved.id} className="px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-3" data-testid={`row-session-${saved.id}`}>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                <code className="text-sm font-semibold text-foreground break-all">{saved.email}</code>
-                                {isCurrent && <Badge variant="default" className="text-xs shrink-0">Active</Badge>}
-                                {expired && !isCurrent && <Badge variant="secondary" className="text-xs shrink-0 text-muted-foreground">Expired</Badge>}
+                    <div className="flex-1 overflow-y-auto">
+                      {mails.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+                          <RefreshCcw className="w-8 h-8 text-muted-foreground/30 animate-spin mb-3" style={{ animationDuration: "3s" }} />
+                          <p className="font-medium text-foreground text-sm">Waiting for emails</p>
+                          <p className="text-xs text-muted-foreground mt-1">Emails will appear here automatically.</p>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-border">
+                          {mails.map((mail) => (
+                            <button
+                              key={`${mail._sessionId}-${mail.rawId}`}
+                              onClick={() => { setSelectedMailId(mail.rawId); setSelectedMailSession(mail._sessionId); }}
+                              className="w-full text-left px-4 py-4 active:bg-muted/40 transition-colors"
+                              data-testid={`button-mail-${mail.rawId}`}
+                            >
+                              <div className="flex items-center justify-between gap-2 mb-1">
+                                <span className="font-semibold text-sm truncate">{mail.fromAddr}</span>
+                                <span className="text-xs text-muted-foreground shrink-0">
+                                  {formatDistanceToNow(new Date(mail.receivedAt), { addSuffix: true })}
+                                </span>
                               </div>
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleCopyEmail(saved.email)}
-                                className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
-                                data-testid={`button-copy-${saved.id}`}
-                              >
-                                <Copy className="w-3.5 h-3.5" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleDeleteHistory(saved.id)}
-                                className="text-muted-foreground hover:text-destructive h-8 w-8 p-0"
-                                data-testid={`button-delete-${saved.id}`}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </Button>
-                            </div>
-                          </div>
-                        );
-                      })}
+                              <p className="text-sm font-medium text-foreground/90 mb-0.5 truncate">{mail.headerSubject || "(No Subject)"}</p>
+                              <p className="text-xs text-muted-foreground line-clamp-1">{mail.text || "No preview..."}</p>
+                              <p className="text-xs text-primary/60 mt-1 truncate">→ {mail._sessionEmail}</p>
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* BOTTOM TAB BAR */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border z-20">
-              <div className="w-full flex">
-                <button
-                  onClick={() => setActiveTab("inbox")}
-                  className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 text-xs font-medium transition-colors ${activeTab === "inbox" ? "text-primary border-t-2 border-primary -mt-px" : "text-muted-foreground hover:text-foreground"}`}
-                  data-testid="tab-inbox"
-                >
-                  <Inbox className="w-5 h-5" />
-                  <span className="flex items-center gap-1">
-                    Inbox
-                    {mails.length > 0 && <span className="bg-primary text-primary-foreground text-[10px] px-1.5 rounded-full">{mails.length}</span>}
-                  </span>
-                </button>
-                <button
-                  onClick={() => setActiveTab("manage")}
-                  className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 text-xs font-medium transition-colors ${activeTab === "manage" ? "text-primary border-t-2 border-primary -mt-px" : "text-muted-foreground hover:text-foreground"}`}
-                  data-testid="tab-manage"
-                >
-                  <History className="w-5 h-5" />
-                  <span>Management</span>
-                </button>
+                  </>
+                )}
               </div>
-            </div>
-          </>
+            )}
+
+            {/* MANAGEMENT TAB */}
+            {activeTab === "manage" && (
+              <div className="flex-1 overflow-y-auto">
+                <div className="px-4 py-2.5 border-b border-border bg-muted/20 flex items-center justify-between">
+                  <span className="text-sm font-semibold">Management</span>
+                  <span className="text-xs text-muted-foreground">{history.length} email(s)</span>
+                </div>
+                {history.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+                    <History className="w-10 h-10 mb-3 text-muted-foreground/30" />
+                    <p className="font-medium text-sm">No emails yet</p>
+                    <p className="text-xs text-muted-foreground mt-1">Emails you create will appear here.</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border">
+                    {history.map((saved) => {
+                      const expired = isExpired(saved.expiresAt);
+                      const isCurrent = saved.id === sessionId;
+                      return (
+                        <div key={saved.id} className="px-4 py-4 flex items-center gap-3" data-testid={`row-session-${saved.id}`}>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                              {isCurrent && <Badge variant="default" className="text-[10px] h-4 px-1.5 shrink-0">Active</Badge>}
+                              {expired && !isCurrent && <Badge variant="secondary" className="text-[10px] h-4 px-1.5 shrink-0">Expired</Badge>}
+                            </div>
+                            <code className="text-sm font-medium text-foreground break-all leading-snug">{saved.email}</code>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={() => handleCopyEmail(saved.email)}
+                              className="h-9 w-9 flex items-center justify-center text-muted-foreground active:text-foreground"
+                              data-testid={`button-copy-${saved.id}`}
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteHistory(saved.id)}
+                              className="h-9 w-9 flex items-center justify-center text-muted-foreground active:text-destructive"
+                              data-testid={`button-delete-${saved.id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+          </div>
         )}
       </main>
+
+      {/* BOTTOM TAB BAR — only when session active */}
+      {sessionId && !isLoadingSession && (
+        <div className="shrink-0 fixed bottom-0 left-0 right-0 bg-white border-t border-border z-20 flex">
+          <button
+            onClick={() => setActiveTab("inbox")}
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 text-xs font-medium transition-colors ${activeTab === "inbox" ? "text-primary border-t-2 border-primary -mt-px" : "text-muted-foreground"}`}
+            data-testid="tab-inbox"
+          >
+            <Inbox className="w-5 h-5" />
+            <span className="flex items-center gap-1">
+              Inbox
+              {mails.length > 0 && <span className="bg-primary text-primary-foreground text-[10px] px-1.5 rounded-full">{mails.length}</span>}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab("manage")}
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 text-xs font-medium transition-colors ${activeTab === "manage" ? "text-primary border-t-2 border-primary -mt-px" : "text-muted-foreground"}`}
+            data-testid="tab-manage"
+          >
+            <History className="w-5 h-5" />
+            <span>Management</span>
+          </button>
+        </div>
+      )}
+
     </div>
   );
 }
