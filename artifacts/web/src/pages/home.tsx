@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { format, differenceInSeconds, formatDistanceToNow } from "date-fns";
-import { Copy, RefreshCcw, Mail, CheckCircle2, Inbox, Loader2, History, Trash2, Plus } from "lucide-react";
+import { Copy, RefreshCcw, Mail, CheckCircle2, Inbox, Loader2, History, Trash2, Plus, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCreateSession,
   useGetSession,
@@ -358,7 +359,7 @@ export default function Home() {
                 {selectedMailId ? (
                   <div className="flex-1 overflow-y-auto p-4">
                     <MailDetailView
-                      sessionId={selectedMailSession || sessionId}
+                      sessionId={selectedMailSession || sessionId || ""}
                       mailId={selectedMailId}
                       onBack={() => { setSelectedMailId(null); setSelectedMailSession(null); }}
                     />
