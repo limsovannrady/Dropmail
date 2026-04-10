@@ -6,6 +6,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import {
   useCreateSession,
   useGetSession,
   getGetSessionQueryKey,
@@ -15,6 +27,8 @@ import {
   getGetMailContentQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+
+const SECRET_PIN = "178891";
 
 const SESSION_STORAGE_KEY = "dropmail_session_id";
 const SESSION_HISTORY_KEY = "dropmail_session_history";
@@ -164,6 +178,10 @@ export default function Home() {
   const [isCopied, setIsCopied] = useState(false);
   const [history, setHistory] = useState<SavedSession[]>(getHistory);
   const [activeTab, setActiveTab] = useState("inbox");
+  const [pinDialogOpen, setPinDialogOpen] = useState(false);
+  const [pinValue, setPinValue] = useState("");
+  const [pinError, setPinError] = useState(false);
+  const [pendingCreate, setPendingCreate] = useState(false);
 
   const createSession = useCreateSession();
 
@@ -206,51 +224,53 @@ export default function Home() {
     }
   }, [sessionData]);
 
-  // Auto-create new session when current one expires
-  useEffect(() => {
-    if (!sessionData?.expiresAt) return;
-    const msLeft = new Date(sessionData.expiresAt).getTime() - Date.now();
-    if (msLeft <= 0) return;
-    const timer = setTimeout(() => {
-      createSession.mutate(undefined, {
-        onSuccess: (data) => {
-          setSessionId(data.id);
-          localStorage.setItem(SESSION_STORAGE_KEY, data.id);
-          setSelectedMailId(null);
-        },
-      });
-    }, msLeft);
-    return () => clearTimeout(timer);
-  }, [sessionData?.expiresAt]);
-
-  // Clear invalid session on error (non-expiry errors)
-  useEffect(() => {
-    if (sessionError) {
-      // Try to auto-create a new session instead of just clearing
-      createSession.mutate(undefined, {
-        onSuccess: (data) => {
-          setSessionId(data.id);
-          localStorage.setItem(SESSION_STORAGE_KEY, data.id);
-          setSelectedMailId(null);
-        },
-        onError: () => {
-          setSessionId(null);
-          localStorage.removeItem(SESSION_STORAGE_KEY);
-        },
-      });
-    }
-  }, [sessionError]);
-
-  const handleCreateSession = useCallback(() => {
+  const doCreateSession = useCallback(() => {
+    setPendingCreate(true);
     createSession.mutate(undefined, {
       onSuccess: (data) => {
         setSessionId(data.id);
         localStorage.setItem(SESSION_STORAGE_KEY, data.id);
         setSelectedMailId(null);
         setActiveTab("inbox");
+        setPendingCreate(false);
       },
+      onError: () => setPendingCreate(false),
     });
   }, [createSession]);
+
+  // Auto-create new session when current one expires
+  useEffect(() => {
+    if (!sessionData?.expiresAt) return;
+    const msLeft = new Date(sessionData.expiresAt).getTime() - Date.now();
+    if (msLeft <= 0) return;
+    const timer = setTimeout(() => {
+      doCreateSession();
+    }, msLeft);
+    return () => clearTimeout(timer);
+  }, [sessionData?.expiresAt, doCreateSession]);
+
+  // Clear invalid session on error (non-expiry errors)
+  useEffect(() => {
+    if (sessionError) {
+      doCreateSession();
+    }
+  }, [sessionError, doCreateSession]);
+
+  const handleCreateSession = useCallback(() => {
+    setPinValue("");
+    setPinError(false);
+    setPinDialogOpen(true);
+  }, []);
+
+  const handlePinConfirm = useCallback(() => {
+    if (pinValue === SECRET_PIN) {
+      setPinDialogOpen(false);
+      doCreateSession();
+    } else {
+      setPinError(true);
+      setPinValue("");
+    }
+  }, [pinValue, doCreateSession]);
 
   const handleDeleteHistory = useCallback((id: string) => {
     removeFromHistory(id);
@@ -274,6 +294,49 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+      {/* PIN Dialog */}
+      <Dialog open={pinDialogOpen} onOpenChange={(open) => { if (!open) { setPinDialogOpen(false); setPinValue(""); setPinError(false); } }}>
+        <DialogContent className="sm:max-w-xs text-center">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-center gap-2">
+              <KeyRound className="w-5 h-5 text-primary" />
+              បញ្ចូលលេខកូដសម្ងាត់
+            </DialogTitle>
+            <DialogDescription>
+              សូមបញ្ចូលលេខកូដ 6 ខ្ទង់ ដើម្បីបង្កើត Email Address ថ្មី
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4 py-2">
+            <InputOTP
+              maxLength={6}
+              value={pinValue}
+              onChange={(val) => { setPinValue(val); setPinError(false); }}
+              onComplete={handlePinConfirm}
+            >
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+            {pinError && (
+              <p className="text-sm text-destructive font-medium">លេខកូដមិនត្រឹមត្រូវ! សូមព្យាយាមម្តងទៀត។</p>
+            )}
+            <Button
+              className="w-full"
+              onClick={handlePinConfirm}
+              disabled={pinValue.length < 6 || pendingCreate}
+            >
+              {pendingCreate ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              បញ្ជាក់
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <header className="border-b border-border bg-white sticky top-0 z-10 shadow-sm">
         <div className="container max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
