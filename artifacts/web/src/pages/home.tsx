@@ -221,7 +221,6 @@ export default function Home() {
             <div className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center border border-primary/30 shadow-[0_0_15px_rgba(139,92,246,0.3)]">
               <Mail className="w-4 h-4" />
             </div>
-            <span className="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">DropMail</span>
           </div>
           
           {sessionData && (
@@ -252,12 +251,6 @@ export default function Home() {
             <div className="max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in-95 duration-500">
               <div className="mx-auto w-24 h-24 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center shadow-[0_0_40px_rgba(139,92,246,0.15)]">
                 <Inbox className="w-10 h-10 text-primary" />
-              </div>
-              <div className="space-y-3">
-                <h1 className="text-4xl font-bold tracking-tight text-foreground">Disposable Inbox</h1>
-                <p className="text-lg text-muted-foreground">
-                  Generate a temporary, secure email address instantly. Use it once, protect your privacy forever.
-                </p>
               </div>
               <Button 
                 size="lg" 
